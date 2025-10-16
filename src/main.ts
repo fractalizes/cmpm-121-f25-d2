@@ -1,9 +1,7 @@
-import exampleIconUrl from "./noun-paperclip-7598668-00449F.png";
 import "./style.css";
 
 document.body.innerHTML = `
   <h1>Doodle Thing!</h1>
-  <p>Example image asset: <img src="${exampleIconUrl}" class="icon" /></p>
   <canvas id="canvas"></canvas>
   <br><br>
   <button id="clear">clear</button>
@@ -39,7 +37,7 @@ canvas.addEventListener("mousemove", (mouse) => {
   }
 });
 
-canvas.addEventListener("mouseup", (mouse) => {
+canvas.addEventListener("mouseup", () => {
   if (isDrawing) {
     isDrawing = false;
   }
