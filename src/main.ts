@@ -21,6 +21,13 @@ const ctx = canvas.getContext("2d")!;
 const lines: { x: number; y: number }[][] = [];
 let currentLine: { x: number; y: number }[] | null = null;
 
+const bus = new EventTarget();
+bus.addEventListener("drawing-changed", redraw);
+
+function notify(name: string) {
+  bus.dispatchEvent(new Event(name));
+}
+
 canvas.addEventListener("mousedown", (mouse) => {
   x = mouse.offsetX;
   y = mouse.offsetY;
@@ -36,14 +43,14 @@ canvas.addEventListener("mousemove", (mouse) => {
     x = mouse.offsetX;
     y = mouse.offsetY;
     currentLine?.push({ x: x, y: y });
-    redraw();
+    notify("drawing-changed");
   }
 });
 
 canvas.addEventListener("mouseup", () => {
   isDrawing = false;
   currentLine = null;
-  redraw();
+  notify("drawing-changed");
 });
 
 function redraw() {
@@ -63,5 +70,5 @@ function redraw() {
 
 clear.addEventListener("mousedown", () => {
   lines.splice(0, lines.length);
-  redraw();
+  notify("drawing-changed");
 });
