@@ -34,6 +34,38 @@ function notify(name: string) {
   bus.dispatchEvent(new Event(name));
 }
 
+interface Renderable {
+  display(ctx: CanvasRenderingContext2D): void;
+}
+
+class MarkerLine implements Renderable {
+  private path: { x: number; y: number }[];
+
+  constructor(initialX: number, initialY: number) {
+    this.path = [{ x: initialX, y: initialY }];
+  }
+
+  drag(x: number, y: number): void {
+    this.path.push({ x, y });
+  }
+
+  display(ctx: CanvasRenderingContext2D): void {
+    if (this.path.length < 2) return;
+
+    for (let i = 1; i < this.path.length; i++) {
+      const start = this.path[i - 1];
+      const end = this.path[i];
+      const width = 1 + (i * 0.5); // thicker as we go
+
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+    }
+  }
+}
+
 canvas.addEventListener("mousedown", (mouse) => {
   x = mouse.offsetX;
   y = mouse.offsetY;
@@ -92,3 +124,9 @@ redo.addEventListener("mousedown", () => {
     notify("drawing-changed");
   }
 });
+
+// TODO make marker a button and controllable by user
+const marker = new MarkerLine(50, 50);
+marker.drag(100, 100);
+marker.drag(100, 200);
+marker.display(ctx);
