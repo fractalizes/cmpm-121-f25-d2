@@ -18,31 +18,50 @@ canvas.height = 256;
 
 const ctx = canvas.getContext("2d")!;
 
+const lines: { x: number; y: number }[][] = [];
+let currentLine: { x: number; y: number }[] | null = null;
+
 canvas.addEventListener("mousedown", (mouse) => {
   x = mouse.offsetX;
   y = mouse.offsetY;
-
   isDrawing = true;
+
+  currentLine = [];
+  lines.push(currentLine);
+  currentLine.push({ x: x, y: y });
 });
 
 canvas.addEventListener("mousemove", (mouse) => {
   if (isDrawing) {
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(mouse.offsetX, mouse.offsetY);
-    ctx.stroke();
-
     x = mouse.offsetX;
     y = mouse.offsetY;
+    currentLine?.push({ x: x, y: y });
+    redraw();
   }
 });
 
 canvas.addEventListener("mouseup", () => {
-  if (isDrawing) {
-    isDrawing = false;
-  }
+  isDrawing = false;
+  currentLine = null;
+  redraw();
 });
 
-clear.addEventListener("mousedown", () => {
+function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const line of lines) {
+    if (line.length > 1) {
+      ctx.beginPath();
+      const { x, y } = line[0];
+      ctx.moveTo(x, y);
+      for (const { x, y } of line) {
+        ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  }
+}
+
+clear.addEventListener("mousedown", () => {
+  lines.splice(0, lines.length);
+  redraw();
 });
