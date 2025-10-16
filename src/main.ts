@@ -5,6 +5,8 @@ document.body.innerHTML = `
   <canvas id="canvas"></canvas>
   <br><br>
   <button id="clear">clear</button>
+  <button id="undo">undo</button>
+  <button id="redo">redo</button>
 `;
 
 let isDrawing: boolean = false;
@@ -12,6 +14,9 @@ let x: number = 0;
 let y: number = 0;
 
 const clear = document.getElementById("clear")! as HTMLButtonElement;
+const undo = document.getElementById("undo")! as HTMLButtonElement;
+const redo = document.getElementById("redo")! as HTMLButtonElement;
+
 const canvas = document.getElementById("canvas")! as HTMLCanvasElement;
 canvas.width = 256;
 canvas.height = 256;
@@ -19,6 +24,7 @@ canvas.height = 256;
 const ctx = canvas.getContext("2d")!;
 
 const lines: { x: number; y: number }[][] = [];
+const redoLines: { x: number; y: number }[][] = [];
 let currentLine: { x: number; y: number }[] | null = null;
 
 const bus = new EventTarget();
@@ -71,4 +77,18 @@ function redraw() {
 clear.addEventListener("mousedown", () => {
   lines.splice(0, lines.length);
   notify("drawing-changed");
+});
+
+undo.addEventListener("mousedown", () => {
+  if (lines.length > 0) {
+    redoLines.push(lines.pop()!);
+    notify("drawing-changed");
+  }
+});
+
+redo.addEventListener("mousedown", () => {
+  if (redoLines.length > 0) {
+    lines.push(redoLines.pop()!);
+    notify("drawing-changed");
+  }
 });
