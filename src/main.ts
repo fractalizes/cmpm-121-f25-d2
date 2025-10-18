@@ -19,15 +19,18 @@ interface Renderable {
 class CursorCommand implements Renderable {
   private x: number;
   private y: number;
+  private width: number;
 
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, width: number) {
     this.x = x;
     this.y = y;
+    this.width = width;
   }
 
   display(ctx: CanvasRenderingContext2D): void {
-    ctx.font = "32px monospace";
-    ctx.fillText(".", this.x - 8, this.y + 2);
+    const thin: boolean = this.width == 1;
+    ctx.font = (thin ? "16" : "32") + "px monospace";
+    ctx.fillText("🖊️", this.x - (thin ? 4 : 8), this.y + 2);
   }
 }
 
@@ -104,7 +107,11 @@ function redraw() {
 }
 
 canvas.addEventListener("mouseenter", (mouse) => {
-  cursor = new CursorCommand(mouse.offsetX, mouse.offsetY);
+  cursor = new CursorCommand(
+    mouse.offsetX,
+    mouse.offsetY,
+    thin.disabled ? 1 : 2,
+  );
   notify("tool-moved");
 });
 
@@ -118,7 +125,11 @@ canvas.addEventListener("mousemove", (mouse) => {
     currentLine!.drag(mouse.offsetX, mouse.offsetY);
     notify("drawing-changed");
   }
-  cursor = new CursorCommand(mouse.offsetX, mouse.offsetY);
+  cursor = new CursorCommand(
+    mouse.offsetX,
+    mouse.offsetY,
+    thin.disabled ? 1 : 2,
+  );
   notify("tool-moved");
 });
 
