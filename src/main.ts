@@ -16,7 +16,22 @@ interface Renderable {
   display(ctx: CanvasRenderingContext2D): void;
 }
 
-class MarkerLine implements Renderable {
+class CursorCommand implements Renderable {
+  private x: number;
+  private y: number;
+
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+
+  display(ctx: CanvasRenderingContext2D): void {
+    ctx.font = "32px monospace";
+    ctx.fillText(".", this.x, this.y);
+  }
+}
+
+class MarkerCommand implements Renderable {
   private path: { x: number; y: number }[];
   private width: number;
 
@@ -67,9 +82,9 @@ canvas.height = 256;
 
 const ctx = canvas.getContext("2d")!;
 
-const lines: MarkerLine[] = [];
-const redoLines: MarkerLine[] = [];
-let currentLine: MarkerLine | null = null;
+const lines: MarkerCommand[] = [];
+const redoLines: MarkerCommand[] = [];
+let currentLine: MarkerCommand | null = null;
 
 const bus = new EventTarget();
 bus.addEventListener("drawing-changed", redraw);
@@ -83,7 +98,7 @@ canvas.addEventListener("mousedown", (mouse) => {
   y = mouse.offsetY;
   isDrawing = true;
 
-  currentLine = new MarkerLine(x, y, thin.disabled ? 1 : 3);
+  currentLine = new MarkerCommand(x, y, thin.disabled ? 1 : 3);
   lines.push(currentLine);
 });
 
