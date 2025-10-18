@@ -9,6 +9,38 @@ document.body.innerHTML = `
   <button id="redo">redo</button>
 `;
 
+interface Renderable {
+  display(ctx: CanvasRenderingContext2D): void;
+}
+
+class MarkerLine implements Renderable {
+  private path: { x: number; y: number }[];
+
+  constructor(x: number, y: number) {
+    this.path = [{ x, y }];
+  }
+
+  drag(x: number, y: number) {
+    this.path.push({ x, y });
+  }
+
+  display(ctx: CanvasRenderingContext2D) {
+    if (this.path.length < 1) return;
+    ctx.beginPath();
+    ctx.moveTo(this.path[0].x, this.path[0].y);
+    for (let i = 1; i < this.path.length; i++) {
+      const start = this.path[i - 1];
+      const end = this.path[i];
+
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+    }
+    ctx.stroke();
+  }
+}
+
 let isDrawing: boolean = false;
 let x: number = 0;
 let y: number = 0;
@@ -23,9 +55,9 @@ canvas.height = 256;
 
 const ctx = canvas.getContext("2d")!;
 
-const lines: { x: number; y: number }[][] = [];
-const redoLines: { x: number; y: number }[][] = [];
-let currentLine: { x: number; y: number }[] | null = null;
+const lines: MarkerLine[] = [];
+const redoLines: MarkerLine[] = [];
+let currentLine: MarkerLine | null = null;
 
 const bus = new EventTarget();
 bus.addEventListener("drawing-changed", redraw);
@@ -34,53 +66,20 @@ function notify(name: string) {
   bus.dispatchEvent(new Event(name));
 }
 
-interface Renderable {
-  display(ctx: CanvasRenderingContext2D): void;
-}
-
-class MarkerLine implements Renderable {
-  private path: { x: number; y: number }[];
-
-  constructor(initialX: number, initialY: number) {
-    this.path = [{ x: initialX, y: initialY }];
-  }
-
-  drag(x: number, y: number): void {
-    this.path.push({ x, y });
-  }
-
-  display(ctx: CanvasRenderingContext2D): void {
-    if (this.path.length < 2) return;
-
-    for (let i = 1; i < this.path.length; i++) {
-      const start = this.path[i - 1];
-      const end = this.path[i];
-      const width = 1 + (i * 0.5); // thicker as we go
-
-      ctx.lineWidth = width;
-      ctx.beginPath();
-      ctx.moveTo(start.x, start.y);
-      ctx.lineTo(end.x, end.y);
-      ctx.stroke();
-    }
-  }
-}
-
 canvas.addEventListener("mousedown", (mouse) => {
   x = mouse.offsetX;
   y = mouse.offsetY;
   isDrawing = true;
 
-  currentLine = [];
+  currentLine = new MarkerLine(x, y);
   lines.push(currentLine);
-  currentLine.push({ x: x, y: y });
 });
 
 canvas.addEventListener("mousemove", (mouse) => {
   if (isDrawing) {
     x = mouse.offsetX;
     y = mouse.offsetY;
-    currentLine?.push({ x: x, y: y });
+    currentLine!.drag(x, y);
     notify("drawing-changed");
   }
 });
@@ -94,6 +93,10 @@ canvas.addEventListener("mouseup", () => {
 function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (const line of lines) {
+    line.display(ctx);
+  }
+  /*
+  for (const line of lines) {
     if (line.length > 1) {
       ctx.beginPath();
       const { x, y } = line[0];
@@ -104,6 +107,7 @@ function redraw() {
       ctx.stroke();
     }
   }
+  */
 }
 
 clear.addEventListener("mousedown", () => {
@@ -124,9 +128,3 @@ redo.addEventListener("mousedown", () => {
     notify("drawing-changed");
   }
 });
-
-// TODO make marker a button and controllable by user
-const marker = new MarkerLine(50, 50);
-marker.drag(100, 100);
-marker.drag(100, 200);
-marker.display(ctx);
