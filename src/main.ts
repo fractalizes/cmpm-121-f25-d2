@@ -27,7 +27,7 @@ class CursorCommand implements Renderable {
 
   display(ctx: CanvasRenderingContext2D): void {
     ctx.font = "32px monospace";
-    ctx.fillText(".", this.x, this.y);
+    ctx.fillText(".", this.x - 8, this.y + 2);
   }
 }
 
@@ -63,8 +63,6 @@ class MarkerCommand implements Renderable {
 }
 
 let isDrawing: boolean = false;
-let x: number = 0;
-let y: number = 0;
 
 // edit buttons
 const clear = document.getElementById("clear")! as HTMLButtonElement;
@@ -77,6 +75,7 @@ const thick = document.getElementById("thick")! as HTMLButtonElement;
 thin.disabled = true;
 
 const canvas = document.getElementById("canvas")! as HTMLCanvasElement;
+canvas.style.cursor = "none";
 canvas.width = 256;
 canvas.height = 256;
 
@@ -86,29 +85,52 @@ const lines: MarkerCommand[] = [];
 const redoLines: MarkerCommand[] = [];
 let currentLine: MarkerCommand | null = null;
 
+let cursor: CursorCommand | null = null;
+
 const bus = new EventTarget();
 bus.addEventListener("drawing-changed", redraw);
+bus.addEventListener("tool-moved", redraw);
 
 function notify(name: string) {
   bus.dispatchEvent(new Event(name));
 }
 
-canvas.addEventListener("mousedown", (mouse) => {
-  x = mouse.offsetX;
-  y = mouse.offsetY;
-  isDrawing = true;
+function redraw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const line of lines) {
+    line.display(ctx);
+  }
+  cursor?.display(ctx);
+}
 
-  currentLine = new MarkerCommand(x, y, thin.disabled ? 1 : 3);
-  lines.push(currentLine);
+canvas.addEventListener("mouseenter", (mouse) => {
+  cursor = new CursorCommand(mouse.offsetX, mouse.offsetY);
+  notify("tool-moved");
+});
+
+canvas.addEventListener("mouseout", () => {
+  cursor = null;
+  notify("tool-moved");
 });
 
 canvas.addEventListener("mousemove", (mouse) => {
   if (isDrawing) {
-    x = mouse.offsetX;
-    y = mouse.offsetY;
-    currentLine!.drag(x, y);
+    currentLine!.drag(mouse.offsetX, mouse.offsetY);
     notify("drawing-changed");
   }
+  cursor = new CursorCommand(mouse.offsetX, mouse.offsetY);
+  notify("tool-moved");
+});
+
+canvas.addEventListener("mousedown", (mouse) => {
+  isDrawing = true;
+
+  currentLine = new MarkerCommand(
+    mouse.offsetX,
+    mouse.offsetY,
+    thin.disabled ? 1 : 3,
+  );
+  lines.push(currentLine);
 });
 
 canvas.addEventListener("mouseup", () => {
@@ -116,13 +138,6 @@ canvas.addEventListener("mouseup", () => {
   currentLine = null;
   notify("drawing-changed");
 });
-
-function redraw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (const line of lines) {
-    line.display(ctx);
-  }
-}
 
 clear.addEventListener("mousedown", () => {
   lines.splice(0, lines.length);
