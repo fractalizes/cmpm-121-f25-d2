@@ -3,10 +3,13 @@ import "./style.css";
 document.body.innerHTML = `
   <h1>Doodle Thing!</h1>
   <canvas id="canvas"></canvas>
-  <br><br>
+  <br><br>edit:
   <button id="clear">clear</button>
   <button id="undo">undo</button>
   <button id="redo">redo</button>
+  <br>tools:
+  <button id="thin">thin</button>
+  <button id="thick">thick</button>
 `;
 
 interface Renderable {
@@ -15,9 +18,11 @@ interface Renderable {
 
 class MarkerLine implements Renderable {
   private path: { x: number; y: number }[];
+  private width: number;
 
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, width: number) {
     this.path = [{ x, y }];
+    this.width = width;
   }
 
   drag(x: number, y: number) {
@@ -33,6 +38,7 @@ class MarkerLine implements Renderable {
       const end = this.path[i];
 
       ctx.beginPath();
+      ctx.lineWidth = this.width;
       ctx.moveTo(start.x, start.y);
       ctx.lineTo(end.x, end.y);
       ctx.stroke();
@@ -45,9 +51,15 @@ let isDrawing: boolean = false;
 let x: number = 0;
 let y: number = 0;
 
+// edit buttons
 const clear = document.getElementById("clear")! as HTMLButtonElement;
 const undo = document.getElementById("undo")! as HTMLButtonElement;
 const redo = document.getElementById("redo")! as HTMLButtonElement;
+
+// tool buttons
+const thin = document.getElementById("thin")! as HTMLButtonElement;
+const thick = document.getElementById("thick")! as HTMLButtonElement;
+thin.disabled = true;
 
 const canvas = document.getElementById("canvas")! as HTMLCanvasElement;
 canvas.width = 256;
@@ -71,7 +83,7 @@ canvas.addEventListener("mousedown", (mouse) => {
   y = mouse.offsetY;
   isDrawing = true;
 
-  currentLine = new MarkerLine(x, y);
+  currentLine = new MarkerLine(x, y, thin.disabled ? 1 : 3);
   lines.push(currentLine);
 });
 
@@ -95,19 +107,6 @@ function redraw() {
   for (const line of lines) {
     line.display(ctx);
   }
-  /*
-  for (const line of lines) {
-    if (line.length > 1) {
-      ctx.beginPath();
-      const { x, y } = line[0];
-      ctx.moveTo(x, y);
-      for (const { x, y } of line) {
-        ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    }
-  }
-  */
 }
 
 clear.addEventListener("mousedown", () => {
@@ -126,5 +125,19 @@ redo.addEventListener("mousedown", () => {
   if (redoLines.length > 0) {
     lines.push(redoLines.pop()!);
     notify("drawing-changed");
+  }
+});
+
+thin.addEventListener("mousedown", () => {
+  if (!thin.disabled) {
+    thin.disabled = true;
+    thick.disabled = false;
+  }
+});
+
+thick.addEventListener("mousedown", () => {
+  if (!thick.disabled) {
+    thick.disabled = true;
+    thin.disabled = false;
   }
 });
