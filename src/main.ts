@@ -29,8 +29,8 @@ class CursorCommand implements Renderable {
 
   display(ctx: CanvasRenderingContext2D): void {
     const thin: boolean = this.width == 1;
-    ctx.font = (thin ? "16" : "32") + "px monospace";
-    ctx.fillText("🖊️", this.x - (thin ? 4 : 8), this.y + 2);
+    ctx.font = (thin ? "16" : "24") + "px monospace";
+    ctx.fillText("🖊️", this.x - (thin ? 4 : 6), this.y - (thin ? 0 : 2));
   }
 }
 
