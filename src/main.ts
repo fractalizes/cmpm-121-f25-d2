@@ -74,6 +74,7 @@ class MarkerCommand implements Renderable {
   }
 }
 
+/*
 class StickerCommand implements Renderable {
   private x: number;
   private y: number;
@@ -87,6 +88,7 @@ class StickerCommand implements Renderable {
   display(ctx: CanvasRenderingContext2D): void {
   }
 }
+*/
 
 interface Sticker {
   icon: string;
@@ -127,8 +129,8 @@ canvas.height = 256;
 
 const ctx = canvas.getContext("2d")!;
 
-const lines: (MarkerCommand | StickerCommand)[] = [];
-const redoLines: (MarkerCommand | StickerCommand)[] = [];
+const lines: (MarkerCommand /* | StickerCommand*/)[] = [];
+const redoLines: (MarkerCommand /* | StickerCommand*/)[] = [];
 let currentLine: MarkerCommand | null = null;
 
 let cursor: CursorCommand | null = null;
