@@ -38,7 +38,8 @@ class CursorCommand implements Renderable {
     if (this.icon == "🖊️") {
       const thin: boolean = this.width == 1;
       ctx.font = (thin ? "16" : "24") + "px monospace";
-    }
+    } else ctx.font = "36px monospace";
+
     ctx.fillText(this.icon, this.x - (thin ? 4 : 6), this.y - (thin ? 0 : 2));
   }
 }
@@ -74,21 +75,27 @@ class MarkerCommand implements Renderable {
   }
 }
 
-/*
 class StickerCommand implements Renderable {
   private x: number;
   private y: number;
-  private button: HTMLButtonElement;
+  private icon: string;
 
-  constructor(x: number, y: number, button: HTMLButtonElement) {
+  constructor(x: number, y: number, icon: string) {
     this.x = x;
     this.y = y;
-    this.button = button;
+    this.icon = icon;
   }
+
+  drag(x: number, y: number) {
+    // reposition sticker
+    this.x = x;
+    this.y = y;
+  }
+
   display(ctx: CanvasRenderingContext2D): void {
+    ctx.fillText(this.icon, this.x - 4, this.y);
   }
 }
-*/
 
 interface Sticker {
   icon: string;
@@ -129,9 +136,9 @@ canvas.height = 256;
 
 const ctx = canvas.getContext("2d")!;
 
-const lines: (MarkerCommand /* | StickerCommand*/)[] = [];
-const redoLines: (MarkerCommand /* | StickerCommand*/)[] = [];
-let currentLine: MarkerCommand | null = null;
+const actions: (MarkerCommand | StickerCommand)[] = [];
+const redoActions: (MarkerCommand | StickerCommand)[] = [];
+let currentAction: MarkerCommand | StickerCommand | null = null;
 
 let cursor: CursorCommand | null = null;
 
@@ -145,8 +152,8 @@ function notify(name: string) {
 
 function redraw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (const line of lines) {
-    line.display(ctx);
+  for (const action of actions) {
+    action.display(ctx);
   }
   cursor?.display(ctx);
 }
@@ -179,7 +186,7 @@ canvas.addEventListener("mouseout", () => {
 
 canvas.addEventListener("mousemove", (mouse) => {
   if (isDrawing) {
-    currentLine!.drag(mouse.offsetX, mouse.offsetY);
+    currentAction!.drag(mouse.offsetX, mouse.offsetY);
     notify("drawing-changed");
   }
 
@@ -207,38 +214,46 @@ canvas.addEventListener("mousedown", (mouse) => {
   if (thin.disabled || thick.disabled) {
     isDrawing = true;
 
-    currentLine = new MarkerCommand(
+    currentAction = new MarkerCommand(
       mouse.offsetX,
       mouse.offsetY,
       thin.disabled ? 1 : 3,
     );
-    lines.push(currentLine);
   } else {
-    // sticker implementation
+    let icon: string | null = null;
+    stickers.forEach((sticker) => {
+      if (sticker.button.disabled) icon = sticker.icon;
+    });
+    currentAction = new StickerCommand(
+      mouse.offsetX,
+      mouse.offsetY,
+      icon!,
+    );
   }
+  actions.push(currentAction);
 });
 
 canvas.addEventListener("mouseup", () => {
   isDrawing = false;
-  currentLine = null;
+  currentAction = null;
   notify("drawing-changed");
 });
 
 clear.addEventListener("mousedown", () => {
-  lines.splice(0, lines.length);
+  actions.splice(0, actions.length);
   notify("drawing-changed");
 });
 
 undo.addEventListener("mousedown", () => {
-  if (lines.length > 0) {
-    redoLines.push(lines.pop()!);
+  if (actions.length > 0) {
+    redoActions.push(actions.pop()!);
     notify("drawing-changed");
   }
 });
 
 redo.addEventListener("mousedown", () => {
-  if (redoLines.length > 0) {
-    lines.push(redoLines.pop()!);
+  if (redoActions.length > 0) {
+    actions.push(redoActions.pop()!);
     notify("drawing-changed");
   }
 });
