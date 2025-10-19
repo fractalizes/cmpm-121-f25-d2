@@ -7,9 +7,14 @@ document.body.innerHTML = `
   <button id="clear">clear</button>
   <button id="undo">undo</button>
   <button id="redo">redo</button>
-  <br>tools:
+  <br>marker:
   <button id="thin">thin</button>
   <button id="thick">thick</button>
+  <br>stickers:
+  <button id="stickerA">🤯</button>
+  <button id="stickerB">😭</button>
+  <button id="stickerC">✨</button>
+
 `;
 
 interface Renderable {
@@ -19,18 +24,20 @@ interface Renderable {
 class CursorCommand implements Renderable {
   private x: number;
   private y: number;
+  private icon: string;
   private width: number;
 
-  constructor(x: number, y: number, width: number) {
+  constructor(x: number, y: number, icon: string, width: number) {
     this.x = x;
     this.y = y;
+    this.icon = icon;
     this.width = width;
   }
 
   display(ctx: CanvasRenderingContext2D): void {
     const thin: boolean = this.width == 1;
     ctx.font = (thin ? "16" : "24") + "px monospace";
-    ctx.fillText("🖊️", this.x - (thin ? 4 : 6), this.y - (thin ? 0 : 2));
+    ctx.fillText(this.icon, this.x - (thin ? 4 : 6), this.y - (thin ? 0 : 2));
   }
 }
 
@@ -65,6 +72,27 @@ class MarkerCommand implements Renderable {
   }
 }
 
+/*
+class StickerCommand implements Renderable {
+  private x: number;
+  private y: number;
+  private button: HTMLButtonElement;
+
+  constructor(x: number, y: number, button: HTMLButtonElement) {
+    this.x = x;
+    this.y = y;
+    this.button = button;
+  }
+  display(ctx: CanvasRenderingContext2D): void {
+  }
+}
+*/
+
+interface Sticker {
+  icon: string;
+  button: HTMLButtonElement;
+}
+
 let isDrawing: boolean = false;
 
 // edit buttons
@@ -72,10 +100,25 @@ const clear = document.getElementById("clear")! as HTMLButtonElement;
 const undo = document.getElementById("undo")! as HTMLButtonElement;
 const redo = document.getElementById("redo")! as HTMLButtonElement;
 
-// tool buttons
+// marker buttons
 const thin = document.getElementById("thin")! as HTMLButtonElement;
 const thick = document.getElementById("thick")! as HTMLButtonElement;
 thin.disabled = true;
+
+// sticker icons
+const stickerA: Sticker = {
+  icon: "🤯",
+  button: document.getElementById("stickerA")! as HTMLButtonElement,
+};
+const stickerB: Sticker = {
+  icon: "😭",
+  button: document.getElementById("stickerB")! as HTMLButtonElement,
+};
+const stickerC: Sticker = {
+  icon: "✨",
+  button: document.getElementById("stickerC")! as HTMLButtonElement,
+};
+const stickers = [stickerA, stickerB, stickerC];
 
 const canvas = document.getElementById("canvas")! as HTMLCanvasElement;
 canvas.style.cursor = "none";
@@ -110,6 +153,7 @@ canvas.addEventListener("mouseenter", (mouse) => {
   cursor = new CursorCommand(
     mouse.offsetX,
     mouse.offsetY,
+    thin.disabled || thick.disabled ? "🖊️" : "hi", // TODO
     thin.disabled ? 1 : 2,
   );
   notify("tool-moved");
@@ -128,6 +172,7 @@ canvas.addEventListener("mousemove", (mouse) => {
   cursor = new CursorCommand(
     mouse.offsetX,
     mouse.offsetY,
+    thin.disabled || thick.disabled ? "🖊️" : "hi", // TODO
     thin.disabled ? 1 : 2,
   );
   notify("tool-moved");
@@ -174,6 +219,7 @@ thin.addEventListener("mousedown", () => {
     thin.disabled = true;
     thick.disabled = false;
   }
+  stickers.forEach((sticker) => sticker.button.disabled = false);
 });
 
 thick.addEventListener("mousedown", () => {
@@ -181,4 +227,19 @@ thick.addEventListener("mousedown", () => {
     thick.disabled = true;
     thin.disabled = false;
   }
+  stickers.forEach((sticker) => sticker.button.disabled = false);
+});
+
+stickers.forEach((sticker) => {
+  sticker.button.addEventListener("mousedown", () => {
+    thin.disabled = false;
+    thick.disabled = false;
+
+    // re-enable sticker buttons
+    stickers.forEach((s) => {
+      s.button.disabled = false;
+    });
+
+    sticker.button.disabled = true;
+  });
 });
