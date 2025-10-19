@@ -93,6 +93,7 @@ class StickerCommand implements Renderable {
   }
 
   display(ctx: CanvasRenderingContext2D): void {
+    ctx.font = "36px monospace";
     ctx.fillText(this.icon, this.x - 4, this.y);
   }
 }
