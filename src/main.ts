@@ -35,8 +35,10 @@ class CursorCommand implements Renderable {
   }
 
   display(ctx: CanvasRenderingContext2D): void {
-    const thin: boolean = this.width == 1;
-    ctx.font = (thin ? "16" : "24") + "px monospace";
+    if (this.icon == "🖊️") {
+      const thin: boolean = this.width == 1;
+      ctx.font = (thin ? "16" : "24") + "px monospace";
+    }
     ctx.fillText(this.icon, this.x - (thin ? 4 : 6), this.y - (thin ? 0 : 2));
   }
 }
@@ -72,7 +74,6 @@ class MarkerCommand implements Renderable {
   }
 }
 
-/*
 class StickerCommand implements Renderable {
   private x: number;
   private y: number;
@@ -86,7 +87,6 @@ class StickerCommand implements Renderable {
   display(ctx: CanvasRenderingContext2D): void {
   }
 }
-*/
 
 interface Sticker {
   icon: string;
@@ -127,8 +127,8 @@ canvas.height = 256;
 
 const ctx = canvas.getContext("2d")!;
 
-const lines: MarkerCommand[] = [];
-const redoLines: MarkerCommand[] = [];
+const lines: (MarkerCommand | StickerCommand)[] = [];
+const redoLines: (MarkerCommand | StickerCommand)[] = [];
 let currentLine: MarkerCommand | null = null;
 
 let cursor: CursorCommand | null = null;
@@ -150,10 +150,21 @@ function redraw() {
 }
 
 canvas.addEventListener("mouseenter", (mouse) => {
+  let cursorIcon: string | null = null;
+  if (thin.disabled || thick.disabled) {
+    cursorIcon = "🖊️";
+  } else {
+    stickers.forEach((sticker) => {
+      if (sticker.button.disabled) {
+        cursorIcon = sticker.icon;
+      }
+    });
+  }
+
   cursor = new CursorCommand(
     mouse.offsetX,
     mouse.offsetY,
-    thin.disabled || thick.disabled ? "🖊️" : "hi", // TODO
+    cursorIcon!,
     thin.disabled ? 1 : 2,
   );
   notify("tool-moved");
@@ -169,24 +180,40 @@ canvas.addEventListener("mousemove", (mouse) => {
     currentLine!.drag(mouse.offsetX, mouse.offsetY);
     notify("drawing-changed");
   }
+
+  let cursorIcon: string | null = null;
+  if (thin.disabled || thick.disabled) {
+    cursorIcon = "🖊️";
+  } else {
+    stickers.forEach((sticker) => {
+      if (sticker.button.disabled) {
+        cursorIcon = sticker.icon;
+      }
+    });
+  }
+
   cursor = new CursorCommand(
     mouse.offsetX,
     mouse.offsetY,
-    thin.disabled || thick.disabled ? "🖊️" : "hi", // TODO
+    cursorIcon!,
     thin.disabled ? 1 : 2,
   );
   notify("tool-moved");
 });
 
 canvas.addEventListener("mousedown", (mouse) => {
-  isDrawing = true;
+  if (thin.disabled || thick.disabled) {
+    isDrawing = true;
 
-  currentLine = new MarkerCommand(
-    mouse.offsetX,
-    mouse.offsetY,
-    thin.disabled ? 1 : 3,
-  );
-  lines.push(currentLine);
+    currentLine = new MarkerCommand(
+      mouse.offsetX,
+      mouse.offsetY,
+      thin.disabled ? 1 : 3,
+    );
+    lines.push(currentLine);
+  } else {
+    // sticker implementation
+  }
 });
 
 canvas.addEventListener("mouseup", () => {
@@ -239,7 +266,6 @@ stickers.forEach((sticker) => {
     stickers.forEach((s) => {
       s.button.disabled = false;
     });
-
     sticker.button.disabled = true;
   });
 });
