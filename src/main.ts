@@ -11,10 +11,10 @@ document.body.innerHTML = `
   <button id="thin">thin</button>
   <button id="thick">thick</button>
   <br>stickers:
-  <button id="stickerA">🤯</button>
-  <button id="stickerB">😭</button>
-  <button id="stickerC">✨</button>
-
+  <button id="custom">(+)</button>
+  <button id="sticker0">🤯</button>
+  <button id="sticker1">😭</button>
+  <button id="sticker2">✨</button>
 `;
 
 interface Renderable {
@@ -116,19 +116,20 @@ const thick = document.getElementById("thick")! as HTMLButtonElement;
 thin.disabled = true;
 
 // sticker icons
-const stickerA: Sticker = {
+const sticker0: Sticker = {
   icon: "🤯",
-  button: document.getElementById("stickerA")! as HTMLButtonElement,
+  button: document.getElementById("sticker0")! as HTMLButtonElement,
 };
-const stickerB: Sticker = {
+const sticker1: Sticker = {
   icon: "😭",
-  button: document.getElementById("stickerB")! as HTMLButtonElement,
+  button: document.getElementById("sticker1")! as HTMLButtonElement,
 };
-const stickerC: Sticker = {
+const sticker2: Sticker = {
   icon: "✨",
-  button: document.getElementById("stickerC")! as HTMLButtonElement,
+  button: document.getElementById("sticker2")! as HTMLButtonElement,
 };
-const stickers = [stickerA, stickerB, stickerC];
+const stickers = [sticker0, sticker1, sticker2];
+const custom = document.getElementById("custom")! as HTMLButtonElement;
 
 const canvas = document.getElementById("canvas")! as HTMLCanvasElement;
 canvas.style.cursor = "none";
@@ -157,6 +158,19 @@ function redraw() {
     action.display(ctx);
   }
   cursor?.display(ctx);
+}
+
+function stickerEvent(sticker: Sticker) {
+  sticker.button.addEventListener("mousedown", () => {
+    thin.disabled = false;
+    thick.disabled = false;
+
+    // re-enable sticker buttons
+    stickers.forEach((s) => {
+      s.button.disabled = false;
+    });
+    sticker.button.disabled = true;
+  });
 }
 
 canvas.addEventListener("mouseenter", (mouse) => {
@@ -275,15 +289,32 @@ thick.addEventListener("mousedown", () => {
   stickers.forEach((sticker) => sticker.button.disabled = false);
 });
 
-stickers.forEach((sticker) => {
-  sticker.button.addEventListener("mousedown", () => {
-    thin.disabled = false;
-    thick.disabled = false;
+custom.addEventListener("mousedown", () => {
+  const stickerText = prompt(
+    "Input your custom sticker:",
+    "🧽",
+  );
+  // if the sticker is not null and no whitespace has been submitted
+  if (stickerText !== null && stickerText.trim().length > 0) {
+    const newStickerButton = document.createElement("button");
+    newStickerButton.innerHTML = stickerText;
+    newStickerButton.id = "customSticker" + stickers.length.toString();
+    document.body.append(newStickerButton);
+    document.body.append(" "); // create for spacing
 
-    // re-enable sticker buttons
-    stickers.forEach((s) => {
-      s.button.disabled = false;
-    });
-    sticker.button.disabled = true;
-  });
+    const newSticker: Sticker = {
+      icon: stickerText,
+      button: document.getElementById(
+        newStickerButton.id,
+      )! as HTMLButtonElement,
+    };
+
+    stickers.push(newSticker);
+    stickerEvent(newSticker);
+    alert("Your custom " + stickerText + " has been added!");
+  } else alert("Custom sticker has been cancelled.");
+});
+
+stickers.forEach((sticker) => {
+  stickerEvent(sticker);
 });
