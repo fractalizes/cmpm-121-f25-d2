@@ -7,6 +7,7 @@ document.body.innerHTML = `
   <button id="clear">clear</button>
   <button id="undo">undo</button>
   <button id="redo">redo</button>
+  <button id="export">export</button>
   <br>marker:
   <button id="thin">thin</button>
   <button id="thick">thick</button>
@@ -17,8 +18,19 @@ document.body.innerHTML = `
   <button id="sticker2">✨</button>
 `;
 
+/////////////////////////////////////
+////                             ////
+////     CLASSES / INTERFACES    ////
+////                             ////
+/////////////////////////////////////
+
 interface Renderable {
   display(ctx: CanvasRenderingContext2D): void;
+}
+
+interface Sticker {
+  icon: string;
+  button: HTMLButtonElement;
 }
 
 class CursorCommand implements Renderable {
@@ -98,10 +110,11 @@ class StickerCommand implements Renderable {
   }
 }
 
-interface Sticker {
-  icon: string;
-  button: HTMLButtonElement;
-}
+/////////////////////////////////////
+////                             ////
+////          VARIABLES          ////
+////                             ////
+/////////////////////////////////////
 
 let isDrawing: boolean = false;
 
@@ -109,6 +122,7 @@ let isDrawing: boolean = false;
 const clear = document.getElementById("clear")! as HTMLButtonElement;
 const undo = document.getElementById("undo")! as HTMLButtonElement;
 const redo = document.getElementById("redo")! as HTMLButtonElement;
+const exportButton = document.getElementById("export")! as HTMLButtonElement;
 
 // marker buttons
 const thin = document.getElementById("thin")! as HTMLButtonElement;
@@ -136,7 +150,9 @@ canvas.style.cursor = "none";
 canvas.width = 256;
 canvas.height = 256;
 
-const ctx = canvas.getContext("2d")!;
+const canvasExport = document.createElement("canvas");
+canvasExport.width = 1024;
+canvasExport.height = 1024;
 
 const actions: (MarkerCommand | StickerCommand)[] = [];
 const redoActions: (MarkerCommand | StickerCommand)[] = [];
@@ -145,19 +161,28 @@ let currentAction: MarkerCommand | StickerCommand | null = null;
 let cursor: CursorCommand | null = null;
 
 const bus = new EventTarget();
-bus.addEventListener("drawing-changed", redraw);
-bus.addEventListener("tool-moved", redraw);
+bus.addEventListener("drawing-changed", () => render(canvas, true));
+bus.addEventListener("tool-moved", () => render(canvas, true));
+
+/////////////////////////////////////
+////                             ////
+////          FUNCTIONS          ////
+////                             ////
+/////////////////////////////////////
 
 function notify(name: string) {
   bus.dispatchEvent(new Event(name));
 }
 
-function redraw() {
+function render(canvas: HTMLCanvasElement, drawing: boolean) {
+  const ctx = canvas.getContext("2d")!;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // completely reset canvas
+  ctx.scale(drawing ? 1 : 4, drawing ? 1 : 4);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (const action of actions) {
     action.display(ctx);
   }
-  cursor?.display(ctx);
+  if (drawing) cursor?.display(ctx);
 }
 
 function stickerEvent(sticker: Sticker) {
@@ -166,12 +191,16 @@ function stickerEvent(sticker: Sticker) {
     thick.disabled = false;
 
     // re-enable sticker buttons
-    stickers.forEach((s) => {
-      s.button.disabled = false;
-    });
+    stickers.forEach((s) => s.button.disabled = false);
     sticker.button.disabled = true;
   });
 }
+
+/////////////////////////////////////
+////                             ////
+////       EVENT LISTENERS       ////
+////                             ////
+/////////////////////////////////////
 
 canvas.addEventListener("mouseenter", (mouse) => {
   let cursorIcon: string | null = null;
@@ -273,6 +302,15 @@ redo.addEventListener("mousedown", () => {
   }
 });
 
+exportButton.addEventListener("mousedown", () => {
+  render(canvasExport, false);
+
+  const anchor = document.createElement("a");
+  anchor.href = canvasExport.toDataURL("image/png");
+  anchor.download = "sketchpad.png";
+  anchor.click();
+});
+
 thin.addEventListener("mousedown", () => {
   if (!thin.disabled) {
     thin.disabled = true;
@@ -300,7 +338,7 @@ custom.addEventListener("mousedown", () => {
     newStickerButton.innerHTML = stickerText;
     newStickerButton.id = "customSticker" + stickers.length.toString();
     document.body.append(newStickerButton);
-    document.body.append(" "); // create for spacing
+    document.body.append(" "); // append for spacing
 
     const newSticker: Sticker = {
       icon: stickerText,
