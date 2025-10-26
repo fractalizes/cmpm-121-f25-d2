@@ -1,6 +1,58 @@
+body {
+  background-color: #ff9900;
+}
+
 canvas {
   border: 4px solid black;
   border-radius: 5%;
   background-color: #ffffff;
   filter: drop-shadow(10px 10px 10px #0000007e);
+}
+
+button {
+  color: #ffffff;
+  background-color: #ffffff00;
+  border: 1px solid #ffffff;
+  border-width: 3px;
+  border-radius: 6px;
+  padding: 1rem;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.display {
+  justify-content: center;
+  align-items: center;
+  vertical-align: center;
+  display: grid;
+  grid-template-areas:
+    "edit-box canvas-box canvas-box"
+    "edit-box canvas-box canvas-box"
+    "sticker-box sticker-box sticker-box";
+}
+
+.canvas-display {
+  padding: 10px;
+  text-align: right;
+  color: #ffffff;
+}
+
+.edit-display {
+  padding: 10px;
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  vertical-align: center;
+}
+
+.sticker-display {
+  display: flex;
+  align-items: center;
+  vertical-align: center;
+}
+
+:disabled {
+  background-color: #ffffff;
+  color: #ff9900;
+  cursor: not-allowed;
 }

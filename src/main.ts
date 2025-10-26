@@ -1,21 +1,29 @@
 import "./style.css";
 
 document.body.innerHTML = `
-  <h1>Doodle Thing!</h1>
-  <canvas id="canvas"></canvas>
-  <br><br>edit:
-  <button id="clear">clear</button>
-  <button id="undo">undo</button>
-  <button id="redo">redo</button>
-  <button id="export">export</button>
-  <br>marker:
-  <button id="thin">thin</button>
-  <button id="thick">thick</button>
-  <br>stickers:
-  <button id="custom">(+)</button>
-  <button id="sticker0">🤯</button>
-  <button id="sticker1">😭</button>
-  <button id="sticker2">✨</button>
+  <div class="display">
+    <div class="canvas-display" style="grid-area: canvas-box">
+      <h1>Doodle Thing!</h1>
+      <canvas id="canvas"></canvas>
+    </div>
+    <div class ="edit-display" style="grid-area: edit-box">
+      <br><br>edit:
+      <button id="clear">clear</button>
+      <button id="undo">undo</button>
+      <button id="redo">redo</button>
+      <button id="export">export</button>
+      <br>marker:
+      <button id="thin">thin</button>
+      <button id="thick">thick</button>
+    </div>
+    <div class ="sticker-display" style="grid-area: sticker-box">
+      <br>stickers:
+      <button id="custom">(+)</button>
+      <button id="sticker0">🤯</button>
+      <button id="sticker1">😭</button>
+      <button id="sticker2">✨</button>
+    </div>
+  </div>
 `;
 
 /////////////////////////////////////
@@ -225,6 +233,7 @@ canvas.addEventListener("mouseenter", (mouse) => {
 
 canvas.addEventListener("mouseout", () => {
   cursor = null;
+  isDrawing = false;
   notify("tool-moved");
 });
 
@@ -335,10 +344,10 @@ custom.addEventListener("mousedown", () => {
   // if the sticker is not null and no whitespace has been submitted
   if (stickerText !== null && stickerText.trim().length > 0) {
     const newStickerButton = document.createElement("button");
+    const stickerDiv = document.querySelector(".sticker-display")!;
     newStickerButton.innerHTML = stickerText;
     newStickerButton.id = "customSticker" + stickers.length.toString();
-    document.body.append(newStickerButton);
-    document.body.append(" "); // append for spacing
+    stickerDiv.appendChild(newStickerButton);
 
     const newSticker: Sticker = {
       icon: stickerText,
