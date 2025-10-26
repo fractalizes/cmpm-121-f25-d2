@@ -5,21 +5,28 @@ document.body.innerHTML = `
     <div class="canvas-display" style="grid-area: canvas-box">
       <h1><i>Doodloodle!</h1>
       <canvas id="canvas"></canvas>
-      <h4>created by ian :]</i></h4>
+      <h4>[a simple web sticker sketchpad]</i></h4>
     </div>
-    <div class ="edit-display" style="grid-area: edit-box">
+    <div class="edit-display" style="grid-area: edit-box">
       <h2>edit:</h2>
       <button id="clear" class="clear">✖ clear</button><div class="divider"/></div>
       <button id="undo" class="undo">↶ undo</button><div class="divider"/></div>
       <button id="redo" class="redo">↷ redo</button><div class="divider"/></div>
       <button id="export" class="export">✪ export</button>
     </div>
-    <div class ="marker-display" style="grid-area: marker-box">
+    <div class="marker-display" style="grid-area: marker-box">
       <h2>marker:</h2>
       <button id="thin">· thin</button><div class="divider"/></div>
-      <button id="thick">• thick</button><div class="divider"/></div>
+      <button id="thick">• thick</button>
     </div>
-    <div class ="sticker-display" style="grid-area: sticker-box">
+    <div class="slider-display" style="grid-area: slider-box">
+      <h3>color: <span id="color-val">black</span></h3>
+      <input type="range" id="color" min="0" max="8" step="1">
+      <div class="divider"/></div><div class="divider"/></div>
+      <h3>rotation: <span id="rotation-val">0</span>°</h3>
+      <input type="range" id="rotation" min="0" max="359" step="1">
+    </div>
+    <div class="sticker-display" style="grid-area: sticker-box">
       <h3>stickers:</h2>
       <button id="custom">(+)</button>
       <button id="sticker0">🤯</button>
@@ -31,7 +38,7 @@ document.body.innerHTML = `
 
 /////////////////////////////////////
 ////                             ////
-////     CLASSES / INTERFACES    ////
+////     INTERFACES / CLASSES    ////
 ////                             ////
 /////////////////////////////////////
 
@@ -42,6 +49,12 @@ interface Renderable {
 interface Sticker {
   icon: string;
   button: HTMLButtonElement;
+}
+
+interface Slider {
+  value: HTMLElement;
+  custom: string[];
+  input: HTMLInputElement;
 }
 
 class CursorCommand implements Renderable {
@@ -70,10 +83,12 @@ class CursorCommand implements Renderable {
 class MarkerCommand implements Renderable {
   private path: { x: number; y: number }[];
   private width: number;
+  private color: string;
 
-  constructor(x: number, y: number, width: number) {
+  constructor(x: number, y: number, width: number, color: string) {
     this.path = [{ x, y }];
     this.width = width;
+    this.color = color;
   }
 
   drag(x: number, y: number) {
@@ -88,6 +103,7 @@ class MarkerCommand implements Renderable {
       const start = this.path[i - 1];
       const end = this.path[i];
 
+      ctx.strokeStyle = this.color;
       ctx.beginPath();
       ctx.lineWidth = this.width;
       ctx.moveTo(start.x, start.y);
@@ -170,6 +186,28 @@ const redoActions: (MarkerCommand | StickerCommand)[] = [];
 let currentAction: MarkerCommand | StickerCommand | null = null;
 
 let cursor: CursorCommand | null = null;
+
+const colorSlider: Slider = {
+  value: document.getElementById("color-val")!,
+  custom: [
+    "black",
+    "red",
+    "orange",
+    "yellow",
+    "green",
+    "blue",
+    "purple",
+    "pink",
+    "white",
+  ],
+  input: document.getElementById("color")! as HTMLInputElement,
+};
+const rotationSlider: Slider = {
+  value: document.getElementById("rotation-val")!,
+  custom: [],
+  input: document.getElementById("rotation")! as HTMLInputElement,
+};
+const sliders = [colorSlider, rotationSlider];
 
 const bus = new EventTarget();
 bus.addEventListener("drawing-changed", () => render(canvas, true));
@@ -274,6 +312,7 @@ canvas.addEventListener("mousedown", (mouse) => {
       mouse.offsetX,
       mouse.offsetY,
       thin.disabled ? 1 : 3,
+      colorSlider.value.innerHTML,
     );
   } else {
     let icon: string | null = null;
@@ -369,4 +408,13 @@ custom.addEventListener("mousedown", () => {
 
 stickers.forEach((sticker) => {
   stickerEvent(sticker);
+});
+
+sliders.forEach((slider) => {
+  slider.input.value = "0";
+  slider.input.oninput = function () {
+    slider.value.innerHTML = slider.custom.length > 0
+      ? slider.custom[parseInt(slider.input.value, 10)]
+      : slider.input.value;
+  };
 });

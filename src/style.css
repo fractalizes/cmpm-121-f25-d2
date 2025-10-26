@@ -24,13 +24,13 @@ https://stackoverflow.com/questions/5119711/ */
   vertical-align: center;
   display: grid;
   grid-template-areas:
-    "edit-box canvas-box canvas-box marker-box"
-    "edit-box canvas-box canvas-box marker-box"
-    "sticker-box sticker-box sticker-box sticker-box";
+    "edit-box canvas-box canvas-box canvas-box marker-box"
+    "edit-box canvas-box canvas-box canvas-box marker-box"
+    "sticker-box sticker-box slider-box slider-box slider-box";
 }
 
 .canvas-display {
-  padding: 10px;
+  padding: 25px;
   align-items: center;
   vertical-align: center;
   text-align: center;
@@ -72,8 +72,6 @@ https://stackoverflow.com/questions/5119711/ */
 
 .marker-display {
   display: grid;
-  justify-content: center;
-  align-items: center;
   text-align: right;
 }
 
@@ -83,7 +81,7 @@ https://stackoverflow.com/questions/5119711/ */
   border: 1px solid #ffffff;
   border-width: 4px;
   border-radius: 6px;
-  padding: 1rem;
+  padding: 1.5rem;
   font-size: 30px;
   cursor: pointer;
 }
@@ -103,6 +101,7 @@ https://stackoverflow.com/questions/5119711/ */
   white-space: normal;
   align-items: center;
   vertical-align: center;
+  max-width: 430px;
 }
 
 .sticker-display > button {
@@ -126,4 +125,11 @@ https://stackoverflow.com/questions/5119711/ */
   color: #ffffff;
   background-color: #ffffff3b;
   cursor: not-allowed;
+}
+
+.slider-display {
+  display: grid;
+  align-items: center;
+  vertical-align: center;
+  padding: 50px;
 }
