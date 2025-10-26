@@ -1,23 +1,21 @@
 body {
   background-color: #ff9900;
+  color: #ffffff;
 }
 
 canvas {
   border: 4px solid black;
   border-radius: 5%;
-  background-color: #ffffff;
+  background-image: url("./grid-background.jpg");
   filter: drop-shadow(10px 10px 10px #0000007e);
 }
 
-button {
-  color: #ffffff;
-  background-color: #ffffff00;
-  border: 1px solid #ffffff;
-  border-width: 3px;
-  border-radius: 6px;
-  padding: 1rem;
-  font-size: 30px;
-  cursor: pointer;
+/* shoutouts to this stack overflow post!
+https://stackoverflow.com/questions/5119711/ */
+.divider {
+  height: 5px;
+  width: 5px;
+  display: inline-block;
 }
 
 .display {
@@ -26,33 +24,106 @@ button {
   vertical-align: center;
   display: grid;
   grid-template-areas:
-    "edit-box canvas-box canvas-box"
-    "edit-box canvas-box canvas-box"
-    "sticker-box sticker-box sticker-box";
+    "edit-box canvas-box canvas-box marker-box"
+    "edit-box canvas-box canvas-box marker-box"
+    "sticker-box sticker-box sticker-box sticker-box";
 }
 
 .canvas-display {
   padding: 10px;
-  text-align: right;
-  color: #ffffff;
+  align-items: center;
+  vertical-align: center;
+  text-align: center;
 }
 
 .edit-display {
-  padding: 10px;
+  min-height: 256px;
   display: grid;
   justify-content: center;
   align-items: center;
-  vertical-align: center;
+}
+
+.edit-display > button {
+  color: #ffffff;
+  background-color: #ff9900;
+  border: 1px solid #ffffff;
+  border-width: 4px;
+  border-radius: 6px;
+  padding: 1rem;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.edit-display > .clear:hover {
+  background-color: #ff000070;
+}
+
+.edit-display > .undo:hover {
+  background-color: #fffb0075;
+}
+
+.edit-display > .redo:hover {
+  background-color: #00d5ffbf;
+}
+
+.edit-display > .export:hover {
+  background-color: #55ff00a7;
+}
+
+.marker-display {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  text-align: right;
+}
+
+.marker-display > button {
+  color: #ff9900;
+  background-color: #ffffff;
+  border: 1px solid #ffffff;
+  border-width: 4px;
+  border-radius: 6px;
+  padding: 1rem;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.marker-display > button:hover {
+  color: #ff9900;
+  background-color: #ffffffe7;
+}
+
+.marker-display > button:disabled {
+  color: #ffffff;
+  background-color: #ffffff3b;
+  cursor: not-allowed;
 }
 
 .sticker-display {
-  display: flex;
+  white-space: normal;
   align-items: center;
   vertical-align: center;
 }
 
-:disabled {
-  background-color: #ffffff;
+.sticker-display > button {
   color: #ff9900;
+  background-color: #ffffff;
+  border: 1px solid #ffffff;
+  border-width: 4px;
+  border-radius: 6px;
+  padding: 1rem;
+  min-height: 80px;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.sticker-display > button:hover {
+  color: #ff9900;
+  background-color: #ffffffe7;
+}
+
+.sticker-display > button:disabled {
+  color: #ffffff;
+  background-color: #ffffff3b;
   cursor: not-allowed;
 }

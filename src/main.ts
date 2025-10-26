@@ -3,21 +3,24 @@ import "./style.css";
 document.body.innerHTML = `
   <div class="display">
     <div class="canvas-display" style="grid-area: canvas-box">
-      <h1>Doodle Thing!</h1>
+      <h1><i>Doodloodle!</h1>
       <canvas id="canvas"></canvas>
+      <h4>created by ian :]</i></h4>
     </div>
     <div class ="edit-display" style="grid-area: edit-box">
-      <br><br>edit:
-      <button id="clear">clear</button>
-      <button id="undo">undo</button>
-      <button id="redo">redo</button>
-      <button id="export">export</button>
-      <br>marker:
-      <button id="thin">thin</button>
-      <button id="thick">thick</button>
+      <h2>edit:</h2>
+      <button id="clear" class="clear">✖ clear</button><div class="divider"/></div>
+      <button id="undo" class="undo">↶ undo</button><div class="divider"/></div>
+      <button id="redo" class="redo">↷ redo</button><div class="divider"/></div>
+      <button id="export" class="export">✪ export</button>
+    </div>
+    <div class ="marker-display" style="grid-area: marker-box">
+      <h2>marker:</h2>
+      <button id="thin">· thin</button><div class="divider"/></div>
+      <button id="thick">• thick</button><div class="divider"/></div>
     </div>
     <div class ="sticker-display" style="grid-area: sticker-box">
-      <br>stickers:
+      <h3>stickers:</h2>
       <button id="custom">(+)</button>
       <button id="sticker0">🤯</button>
       <button id="sticker1">😭</button>
@@ -345,9 +348,11 @@ custom.addEventListener("mousedown", () => {
   if (stickerText !== null && stickerText.trim().length > 0) {
     const newStickerButton = document.createElement("button");
     const stickerDiv = document.querySelector(".sticker-display")!;
+
     newStickerButton.innerHTML = stickerText;
     newStickerButton.id = "customSticker" + stickers.length.toString();
     stickerDiv.appendChild(newStickerButton);
+    stickerDiv.append(" "); // add space between buttons
 
     const newSticker: Sticker = {
       icon: stickerText,
