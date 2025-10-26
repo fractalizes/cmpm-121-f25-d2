@@ -62,21 +62,40 @@ class CursorCommand implements Renderable {
   private y: number;
   private icon: string;
   private width: number;
+  private angle: number;
 
-  constructor(x: number, y: number, icon: string, width: number) {
+  constructor(
+    x: number,
+    y: number,
+    icon: string,
+    width: number,
+    angle: number,
+  ) {
     this.x = x;
     this.y = y;
     this.icon = icon;
     this.width = width;
+    this.angle = angle;
   }
 
   display(ctx: CanvasRenderingContext2D): void {
+    // save position before rotating
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    let x: number = 0;
+    let y: number = 0;
+
     if (this.icon == "🖊️") {
       const thin: boolean = this.width == 1;
+      x = thin ? -8 : 6;
+      y = thin ? -6 : 2;
       ctx.font = (thin ? "16" : "24") + "px monospace";
-    } else ctx.font = "36px monospace";
-
-    ctx.fillText(this.icon, this.x - (thin ? 4 : 6), this.y - (thin ? 0 : 2));
+    } else {
+      ctx.font = "36px monospace";
+      ctx.rotate(this.angle);
+    }
+    ctx.fillText(this.icon, x, y);
+    ctx.restore();
   }
 }
 
@@ -97,8 +116,6 @@ class MarkerCommand implements Renderable {
 
   display(ctx: CanvasRenderingContext2D) {
     if (this.path.length < 1) return;
-    ctx.beginPath();
-    ctx.moveTo(this.path[0].x, this.path[0].y);
     for (let i = 1; i < this.path.length; i++) {
       const start = this.path[i - 1];
       const end = this.path[i];
@@ -117,11 +134,13 @@ class MarkerCommand implements Renderable {
 class StickerCommand implements Renderable {
   private x: number;
   private y: number;
+  private angle: number;
   private icon: string;
 
-  constructor(x: number, y: number, icon: string) {
+  constructor(x: number, y: number, icon: string, angle: number) {
     this.x = x;
     this.y = y;
+    this.angle = angle;
     this.icon = icon;
   }
 
@@ -132,8 +151,14 @@ class StickerCommand implements Renderable {
   }
 
   display(ctx: CanvasRenderingContext2D): void {
+    // save position before rotating
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.angle);
+
     ctx.font = "36px monospace";
-    ctx.fillText(this.icon, this.x - 4, this.y);
+    ctx.fillText(this.icon, 0, 0);
+    ctx.restore();
   }
 }
 
@@ -263,11 +288,13 @@ canvas.addEventListener("mouseenter", (mouse) => {
     });
   }
 
+  const rect = canvas.getBoundingClientRect();
   cursor = new CursorCommand(
-    mouse.offsetX,
-    mouse.offsetY,
+    mouse.clientX - rect.left,
+    mouse.clientY - rect.top,
     cursorIcon!,
     thin.disabled ? 1 : 2,
+    -parseInt(rotationSlider.value.innerHTML, 10) * Math.PI / 180,
   );
   notify("tool-moved");
 });
@@ -295,22 +322,24 @@ canvas.addEventListener("mousemove", (mouse) => {
     });
   }
 
+  const rect = canvas.getBoundingClientRect();
   cursor = new CursorCommand(
-    mouse.offsetX,
-    mouse.offsetY,
+    mouse.clientX - rect.left,
+    mouse.clientY - rect.top,
     cursorIcon!,
     thin.disabled ? 1 : 2,
+    -parseInt(rotationSlider.value.innerHTML, 10) * Math.PI / 180,
   );
   notify("tool-moved");
 });
 
 canvas.addEventListener("mousedown", (mouse) => {
+  const rect = canvas.getBoundingClientRect();
   if (thin.disabled || thick.disabled) {
     isDrawing = true;
-
     currentAction = new MarkerCommand(
-      mouse.offsetX,
-      mouse.offsetY,
+      mouse.clientX - rect.left,
+      mouse.clientY - rect.top,
       thin.disabled ? 1 : 3,
       colorSlider.value.innerHTML,
     );
@@ -320,9 +349,10 @@ canvas.addEventListener("mousedown", (mouse) => {
       if (sticker.button.disabled) icon = sticker.icon;
     });
     currentAction = new StickerCommand(
-      mouse.offsetX,
-      mouse.offsetY,
+      mouse.clientX - rect.left,
+      mouse.clientY - rect.top,
       icon!,
+      -parseInt(rotationSlider.value.innerHTML, 10) * Math.PI / 180,
     );
   }
   actions.push(currentAction);
