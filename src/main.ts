@@ -9,22 +9,23 @@ document.body.innerHTML = `
     </div>
     <div class="edit-display" style="grid-area: edit-box">
       <h2>edit:</h2>
-      <button id="clear" class="clear">✖ clear</button><div class="divider"/></div>
-      <button id="undo" class="undo">↶ undo</button><div class="divider"/></div>
-      <button id="redo" class="redo">↷ redo</button><div class="divider"/></div>
+      <button id="clear" class="clear">✖ clear</button><div class="divider"></div>
+      <button id="undo" class="undo">↶ undo</button><div class="divider"></div>
+      <button id="redo" class="redo">↷ redo</button><div class="divider"></div>
       <button id="export" class="export">✪ export</button>
     </div>
     <div class="marker-display" style="grid-area: marker-box">
       <h2>marker:</h2>
-      <button id="thin">· thin</button><div class="divider"/></div>
+      <button id="thin">· thin</button><div class="divider"></div>
       <button id="thick">• thick</button>
     </div>
     <div class="slider-display" style="grid-area: slider-box">
-      <h3>color: <span id="color-val">black</span></h3>
-      <input type="range" id="color" min="0" max="8" step="1">
-      <div class="divider"/></div><div class="divider"/></div>
-      <h3>rotation: <span id="rotation-val">0</span>°</h3>
-      <input type="range" id="rotation" min="0" max="359" step="1">
+      <div class="color-preview" id="color-preview" style="grid-area: preview-box"></div>
+      <h3 style="grid-area: color-box">color: <span id="color-val">black</span></h3>
+      <input type="range" id="color" min="0" max="8" step="1" style="grid-area: color-range-box">
+      <div class="divider"></div><div class="divider"></div>
+      <h3 style="grid-area: rotation-box">rotation: <span id="rotation-val">0</span>°</h3>
+      <input type="range" id="rotation" min="0" max="359" step="1" style="grid-area: rotation-range-box">
     </div>
     <div class="sticker-display" style="grid-area: sticker-box">
       <h3>stickers:</h2>
@@ -212,6 +213,7 @@ let currentAction: MarkerCommand | StickerCommand | null = null;
 
 let cursor: CursorCommand | null = null;
 
+// dom elements
 const colorSlider: Slider = {
   value: document.getElementById("color-val")!,
   custom: [
@@ -233,6 +235,7 @@ const rotationSlider: Slider = {
   input: document.getElementById("rotation")! as HTMLInputElement,
 };
 const sliders = [colorSlider, rotationSlider];
+const preview = document.getElementById("color-preview")! as HTMLDivElement;
 
 const bus = new EventTarget();
 bus.addEventListener("drawing-changed", () => render(canvas, true));
@@ -443,8 +446,11 @@ stickers.forEach((sticker) => {
 sliders.forEach((slider) => {
   slider.input.value = "0";
   slider.input.oninput = function () {
-    slider.value.innerHTML = slider.custom.length > 0
-      ? slider.custom[parseInt(slider.input.value, 10)]
-      : slider.input.value;
+    if (slider.custom.length > 0) {
+      const color = slider.custom[parseInt(slider.input.value, 10)];
+      slider.value.innerHTML = color;
+      preview.style.backgroundColor = color;
+      console.log(preview.style.backgroundColor);
+    } else slider.value.innerHTML = slider.input.value;
   };
 });

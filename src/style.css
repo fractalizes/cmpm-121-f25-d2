@@ -30,7 +30,6 @@ https://stackoverflow.com/questions/5119711/ */
 }
 
 .canvas-display {
-  padding: 25px;
   align-items: center;
   vertical-align: center;
   text-align: center;
@@ -101,7 +100,8 @@ https://stackoverflow.com/questions/5119711/ */
   white-space: normal;
   align-items: center;
   vertical-align: center;
-  max-width: 430px;
+  max-width: 381px;
+  padding: 20px;
 }
 
 .sticker-display > button {
@@ -127,9 +127,26 @@ https://stackoverflow.com/questions/5119711/ */
   cursor: not-allowed;
 }
 
+.color-preview {
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  border: 3px solid #ffffff;
+  background-color: #000000;
+}
+
 .slider-display {
-  display: grid;
   align-items: center;
   vertical-align: center;
-  padding: 50px;
+  display: inline-grid;
+  grid-template-areas:
+    "preview-box color-box"
+    "color-range-box color-range-box"
+    "rotation-box rotation-box"
+    "rotation-range-box rotation-range-box";
+  grid-template-columns: 1fr 9fr;
+}
+
+.slider-container div {
+  display: contents;
 }
