@@ -251,6 +251,10 @@ function notify(name: string) {
   bus.dispatchEvent(new Event(name));
 }
 
+function radToDegrees(x: number) {
+  return x * Math.PI / 180;
+}
+
 function render(canvas: HTMLCanvasElement, drawing: boolean) {
   const ctx = canvas.getContext("2d")!;
   ctx.setTransform(1, 0, 0, 1, 0, 0); // completely reset canvas
@@ -297,7 +301,7 @@ canvas.addEventListener("mouseenter", (mouse) => {
     mouse.clientY - rect.top,
     cursorIcon!,
     thin.disabled ? 1 : 2,
-    -parseInt(rotationSlider.value.innerHTML, 10) * Math.PI / 180,
+    radToDegrees(-parseInt(rotationSlider.value.innerHTML, 10)),
   );
   notify("tool-moved");
 });
@@ -331,7 +335,7 @@ canvas.addEventListener("mousemove", (mouse) => {
     mouse.clientY - rect.top,
     cursorIcon!,
     thin.disabled ? 1 : 2,
-    -parseInt(rotationSlider.value.innerHTML, 10) * Math.PI / 180,
+    radToDegrees(-parseInt(rotationSlider.value.innerHTML, 10)),
   );
   notify("tool-moved");
 });
@@ -355,7 +359,7 @@ canvas.addEventListener("mousedown", (mouse) => {
       mouse.clientX - rect.left,
       mouse.clientY - rect.top,
       icon!,
-      -parseInt(rotationSlider.value.innerHTML, 10) * Math.PI / 180,
+      radToDegrees(-parseInt(rotationSlider.value.innerHTML, 10)),
     );
   }
   actions.push(currentAction);
