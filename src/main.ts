@@ -87,9 +87,8 @@ class CursorCommand implements Renderable {
     let y: number = 0;
 
     if (this.icon == "🖊️") {
-      const thin: boolean = this.width == 1;
-      x = thin ? -8 : 6;
-      y = thin ? -6 : 2;
+      x = -8;
+      y = -6;
       ctx.font = (thin ? "16" : "24") + "px monospace";
     } else {
       ctx.font = "36px monospace";

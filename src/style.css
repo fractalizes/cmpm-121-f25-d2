@@ -145,8 +145,5 @@ https://stackoverflow.com/questions/5119711/ */
     "rotation-box rotation-box"
     "rotation-range-box rotation-range-box";
   grid-template-columns: 1fr 9fr;
-}
-
-.slider-container div {
-  display: contents;
+  padding: 20px;
 }
