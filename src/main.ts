@@ -91,6 +91,7 @@ class CursorCommand implements Renderable {
       y = -6;
       ctx.font = (thin ? "16" : "24") + "px monospace";
     } else {
+      ctx.globalAlpha = 0.5;
       ctx.font = "36px monospace";
       ctx.rotate(this.angle);
     }
