@@ -89,7 +89,7 @@ class CursorCommand implements Renderable {
     if (this.icon == "🖊️") {
       x = -8;
       y = -6;
-      ctx.font = (thin ? "16" : "24") + "px monospace";
+      ctx.font = (thin.disabled ? "16" : "24") + "px monospace";
     } else {
       ctx.globalAlpha = 0.5;
       ctx.font = "36px monospace";
